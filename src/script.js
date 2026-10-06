@@ -2,24 +2,34 @@ const countdownEl = document.getElementById('countdown');
 const buttonEl = document.getElementById('btn');
 const labelEl = document.getElementById('session-label');
 
+let focus_ses = 0;
+let intervalid = null;
+let time = null;
+
+
 buttonEl.onclick = function(){
-    promodoro_timer();
+
+    //start / resume
+    if (buttonEl.textContent != 'Pause'){
+        if (time == null) start_session();
+        else run_timer();
+        buttonEl.textContent = 'Pause';
+    }
+
+    //pause
+    else {
+        clearInterval(intervalid);
+        intervalid = null;
+        buttonEl.textContent = 'Resume';
+    }
 }
 
-function promodoro_timer(){
-    //loop the timer until it stopped
-    let focus_ses = 0;
-
-    function start_session(){
-        let [starting_min, session] = cur_session(focus_ses)
-
-        let time = starting_min * 60 - 1;
-
-        labelEl.textContent = session;
-
-        const intervalid = setInterval(function(){
+function run_timer(){
+    intervalid = setInterval(function(){
             if (time <= 0) {
                 clearInterval(intervalid);
+                intervalid = null;
+                time = null;
                 focus_ses++;
                 start_session();
                 return;
@@ -27,8 +37,15 @@ function promodoro_timer(){
             countdown(time);
             time--;
         }, 1000);
-    }
-    start_session();
+}
+
+function start_session(){
+    let [starting_min, session] = cur_session(focus_ses)
+    time = starting_min * 60 - 1;
+
+    labelEl.textContent = session;
+
+    run_timer();
 }
 
 function cur_session(focus_ses){
